@@ -38,7 +38,7 @@ export const SlotReel = ({ spinning, finalIcon, delay, onStop }: SlotReelProps) 
     <div className="relative flex items-center justify-center w-full h-full">
       <div
         className={`
-          text-8xl transition-all duration-200
+          text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl transition-all duration-200
           ${isSpinning ? "blur-sm scale-90 opacity-70" : "blur-0 scale-100 opacity-100"}
         `}
       >
