@@ -1,14 +1,16 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { toast } from "@/hooks/use-toast";
 import { Trophy, Zap, TrendingUp, Crown, Sparkles } from "lucide-react";
 import degenHat from "@/assets/degen-logo.png";
+import { SlotMachine } from "@/components/SlotMachine";
 
-interface Attempt {
+interface SpinResult {
   id: number;
-  guess: number;
+  reels: string[];
+  won: boolean;
+  amount: number;
   timestamp: Date;
 }
 
@@ -25,17 +27,15 @@ interface LeaderboardEntry {
   totalWon: number;
 }
 
+const SLOT_ICONS = ["🎰", "💎", "⭐", "👑", "🍒", "🔔", "💰", "🎲"];
+const HAT_ICON = "🎩";
+
 const Index = () => {
-  const [guess, setGuess] = useState("");
   const [pot, setPot] = useState(2340);
-  const [attempts, setAttempts] = useState<Attempt[]>([
-    { id: 1, guess: 42, timestamp: new Date(Date.now() - 120000) },
-    { id: 2, guess: 73, timestamp: new Date(Date.now() - 60000) },
-    { id: 3, guess: 15, timestamp: new Date(Date.now() - 30000) },
-  ]);
-  const [totalGuesses, setTotalGuesses] = useState(26);
-  const [isWinning, setIsWinning] = useState(false);
-  const [targetNumber] = useState(() => Math.floor(Math.random() * 100) + 1);
+  const [spinning, setSpinning] = useState(false);
+  const [reels, setReels] = useState<string[]>([HAT_ICON, HAT_ICON, HAT_ICON]);
+  const [lastSpins, setLastSpins] = useState<SpinResult[]>([]);
+  const [totalSpins, setTotalSpins] = useState(26);
   
   const [winners] = useState<Winner[]>([
     { id: 1, address: "0x742d...3f2a", amount: 1890, timestamp: new Date(Date.now() - 3600000) },
@@ -51,48 +51,74 @@ const Index = () => {
     { address: "0x3d8b...1f5e", wins: 4, totalWon: 7200 },
   ]);
 
-  const handleGuess = () => {
-    const guessNum = parseInt(guess);
-    
-    if (!guess || guessNum < 1 || guessNum > 100) {
-      toast({
-        title: "Invalid guess",
-        description: "Please enter a number between 1 and 100",
-        variant: "destructive",
-      });
-      return;
+  const getRandomIcon = () => {
+    const allIcons = [...SLOT_ICONS, HAT_ICON];
+    return allIcons[Math.floor(Math.random() * allIcons.length)];
+  };
+
+  const handleSpin = () => {
+    if (spinning) return;
+
+    setSpinning(true);
+    setPot(pot + 90);
+    setTotalSpins(totalSpins + 1);
+
+    // Generate random results for each reel
+    const newReels = [getRandomIcon(), getRandomIcon(), getRandomIcon()];
+    setReels(newReels);
+  };
+
+  const handleSpinComplete = () => {
+    setSpinning(false);
+
+    // Check for win conditions
+    const allHats = reels.every((reel) => reel === HAT_ICON);
+    const allSame = reels[0] === reels[1] && reels[1] === reels[2];
+    const twoSame = reels[0] === reels[1] || reels[1] === reels[2] || reels[0] === reels[2];
+
+    let winAmount = 0;
+    let winTitle = "";
+    let winDescription = "";
+
+    if (allHats) {
+      winAmount = pot;
+      winTitle = "🎩🎩🎩 JACKPOT!!!";
+      winDescription = `THREE HATS! You won ${winAmount} $DEGEN!`;
+    } else if (allSame) {
+      winAmount = Math.floor(pot * 0.3);
+      winTitle = "🎉 BIG WIN!";
+      winDescription = `Three of a kind! You won ${winAmount} $DEGEN!`;
+    } else if (twoSame) {
+      winAmount = 200;
+      winTitle = "✨ Nice!";
+      winDescription = `Two matching symbols! You won ${winAmount} $DEGEN!`;
     }
 
-    const newAttempt: Attempt = {
+    // Record the spin
+    const newSpin: SpinResult = {
       id: Date.now(),
-      guess: guessNum,
+      reels: [...reels],
+      won: winAmount > 0,
+      amount: winAmount,
       timestamp: new Date(),
     };
-    
-    setAttempts([newAttempt, ...attempts.slice(0, 4)]);
-    setPot(pot + 90);
-    setTotalGuesses(totalGuesses + 1);
+    setLastSpins([newSpin, ...lastSpins.slice(0, 4)]);
 
-    if (guessNum === targetNumber) {
-      setIsWinning(true);
+    if (winAmount > 0) {
       toast({
-        title: "🎉 WINNER!",
-        description: `You guessed ${guessNum} correctly! You won ${pot + 90} $DEGEN!`,
+        title: winTitle,
+        description: winDescription,
       });
-      
+
       setTimeout(() => {
-        setIsWinning(false);
-        setPot(900);
-        setAttempts([]);
-      }, 5000);
+        setPot(allHats ? 900 : pot - winAmount);
+      }, 2000);
     } else {
       toast({
-        title: "Not quite...",
-        description: `${guessNum} wasn't it. Try again!`,
+        title: "Not this time...",
+        description: "Try again! The jackpot is growing!",
       });
     }
-
-    setGuess("");
   };
 
   return (
@@ -102,100 +128,93 @@ const Index = () => {
         <div className="text-center space-y-3">
           <div className="flex items-center justify-center gap-3">
             <img src={degenHat} alt="Degen Hat" className="w-16 h-16 object-contain animate-[bounce_2s_ease-in-out_infinite]" />
-            <h1 className="text-6xl font-black bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent neon-glow">
-              DEGEN GUESSR
+            <h1 className="text-5xl md:text-6xl font-black bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent neon-glow">
+              DEGEN SLOTS
             </h1>
             <img src={degenHat} alt="Degen Hat" className="w-16 h-16 object-contain animate-[bounce_2s_ease-in-out_infinite] scale-x-[-1]" />
           </div>
-          <p className="text-muted-foreground text-sm font-medium">Guess the number. Win the pot. Be legendary.</p>
+          <p className="text-muted-foreground text-sm font-medium">Spin the reels. Match three hats. Win the jackpot.</p>
         </div>
 
         <div className="grid lg:grid-cols-3 gap-6">
           {/* Left Column - Main Game */}
           <div className="lg:col-span-2 space-y-6">
             {/* Pot Display */}
-            <Card className="glass-card gradient-border p-8 relative overflow-hidden">
+            <Card className="glass-card gradient-border p-6 md:p-8 relative overflow-hidden">
               <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-secondary/10 to-accent/20 animate-[pulse_3s_ease-in-out_infinite]" />
               <div className="relative z-10 text-center space-y-3">
                 <div className="flex items-center justify-center gap-2 text-muted-foreground text-sm font-semibold">
                   <Trophy className="w-5 h-5" />
-                  <span>CURRENT PRIZE POT</span>
+                  <span>JACKPOT PRIZE</span>
                   <Trophy className="w-5 h-5" />
                 </div>
-                <div className="text-7xl font-black bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent neon-glow">
+                <div className="text-5xl md:text-7xl font-black bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent neon-glow">
                   {pot}
                 </div>
                 <div className="text-2xl font-bold text-primary">$DEGEN</div>
               </div>
             </Card>
 
-            {/* Input Section */}
-            <Card className="glass-card gradient-border p-6 space-y-4">
-              <div className="space-y-2">
-                <label className="text-sm font-semibold text-foreground flex items-center gap-2">
-                  <Sparkles className="w-4 h-4 text-primary" />
-                  Your Guess (1-100)
-                </label>
-                <Input
-                  type="number"
-                  min="1"
-                  max="100"
-                  value={guess}
-                  onChange={(e) => setGuess(e.target.value)}
-                  placeholder="Enter number..."
-                  className="h-16 text-3xl font-black text-center bg-input/50 border-2 border-primary/30 focus:border-primary focus:ring-primary rounded-2xl"
-                  onKeyPress={(e) => e.key === "Enter" && handleGuess()}
-                />
-              </div>
-              
-              <Button
-                onClick={handleGuess}
-                className="w-full h-16 bg-gradient-to-r from-primary to-secondary hover:from-primary-glow hover:to-secondary-glow text-white font-black text-xl transition-all duration-300 neon-button rounded-2xl flex items-center justify-center gap-3"
-                disabled={isWinning}
-              >
-                <img src={degenHat} alt="Hat" className="w-8 h-8 object-contain" />
-                <Zap className="w-6 h-6" />
-                GUESS FOR 100 $DEGEN
-                <Zap className="w-6 h-6" />
-              </Button>
-            </Card>
+            {/* Slot Machine */}
+            <SlotMachine spinning={spinning} reels={reels} onSpinComplete={handleSpinComplete} />
+
+            {/* Spin Button */}
+            <Button
+              onClick={handleSpin}
+              disabled={spinning}
+              className="w-full h-16 md:h-20 bg-gradient-to-r from-primary to-secondary hover:from-primary-glow hover:to-secondary-glow text-white font-black text-xl md:text-2xl transition-all duration-300 neon-button rounded-2xl flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <img src={degenHat} alt="Hat" className="w-8 h-8 object-contain" />
+              <Zap className="w-6 h-6" />
+              {spinning ? "SPINNING..." : "SPIN FOR 100 $DEGEN"}
+              <Zap className="w-6 h-6" />
+            </Button>
 
             {/* Stats */}
             <div className="grid grid-cols-2 gap-4">
               <Card className="glass-card gradient-border p-5">
                 <div className="flex items-center gap-2 text-muted-foreground text-xs font-semibold mb-2">
                   <TrendingUp className="w-4 h-4" />
-                  <span>TOTAL GUESSES</span>
+                  <span>TOTAL SPINS</span>
                 </div>
-                <div className="text-4xl font-black text-foreground">{totalGuesses}</div>
+                <div className="text-4xl font-black text-foreground">{totalSpins}</div>
               </Card>
               
               <Card className="glass-card gradient-border p-5">
                 <div className="flex items-center gap-2 text-muted-foreground text-xs font-semibold mb-2">
                   <Zap className="w-4 h-4" />
-                  <span>ENTRY FEE</span>
+                  <span>SPIN COST</span>
                 </div>
                 <div className="text-4xl font-black text-foreground">100</div>
               </Card>
             </div>
 
-            {/* Recent Attempts */}
-            {attempts.length > 0 && (
+            {/* Recent Spins */}
+            {lastSpins.length > 0 && (
               <Card className="glass-card gradient-border p-5">
                 <div className="text-sm font-bold text-foreground mb-4 flex items-center gap-2">
                   <Sparkles className="w-4 h-4 text-primary" />
-                  Recent Attempts
+                  Recent Spins
                 </div>
                 <div className="space-y-2">
-                  {attempts.map((attempt, index) => (
+                  {lastSpins.map((spin, index) => (
                     <div
-                      key={attempt.id}
+                      key={spin.id}
                       className="flex items-center justify-between p-4 bg-muted/40 rounded-xl border border-primary/20 animate-slide-in hover:bg-muted/60 transition-colors"
                       style={{ animationDelay: `${index * 0.1}s` }}
                     >
-                      <span className="text-3xl font-black text-foreground">{attempt.guess}</span>
+                      <div className="flex items-center gap-3">
+                        <div className="flex gap-2 text-3xl">
+                          {spin.reels.map((reel, i) => (
+                            <span key={i}>{reel}</span>
+                          ))}
+                        </div>
+                        {spin.won && (
+                          <span className="text-xs font-bold text-primary">+{spin.amount}</span>
+                        )}
+                      </div>
                       <span className="text-xs text-muted-foreground font-medium">
-                        {attempt.timestamp.toLocaleTimeString()}
+                        {spin.timestamp.toLocaleTimeString()}
                       </span>
                     </div>
                   ))}
@@ -273,20 +292,24 @@ const Index = () => {
             <Card className="glass-card border border-muted/30 p-4">
               <div className="text-xs font-medium text-muted-foreground space-y-2">
                 <p className="flex items-start gap-2">
-                  <span className="text-primary font-bold">•</span>
-                  Pay 100 $DEGEN to guess
+                  <span className="text-primary font-bold">🎩</span>
+                  Three hats = JACKPOT
                 </p>
                 <p className="flex items-start gap-2">
-                  <span className="text-primary font-bold">•</span>
-                  90 $DEGEN added to pot
+                  <span className="text-primary font-bold">🎰</span>
+                  Three same = 30% of pot
                 </p>
                 <p className="flex items-start gap-2">
-                  <span className="text-primary font-bold">•</span>
-                  Guess correctly = win it all
+                  <span className="text-primary font-bold">💎</span>
+                  Two same = 200 $DEGEN
                 </p>
                 <p className="flex items-start gap-2">
-                  <span className="text-primary font-bold">•</span>
-                  Number changes each guess
+                  <span className="text-primary font-bold">⚡</span>
+                  Each spin costs 100
+                </p>
+                <p className="flex items-start gap-2">
+                  <span className="text-primary font-bold">💰</span>
+                  90 added to jackpot
                 </p>
               </div>
             </Card>

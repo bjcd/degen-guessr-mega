@@ -49,6 +49,22 @@ All colors MUST be HSL.
   }
 }
 
+@keyframes spin-reel {
+  0% { transform: translateY(0); }
+  100% { transform: translateY(-100%); }
+}
+
+@keyframes jackpot-pulse {
+  0%, 100% { 
+    transform: scale(1);
+    filter: brightness(1);
+  }
+  50% { 
+    transform: scale(1.05);
+    filter: brightness(1.2);
+  }
+}
+
 @layer base {
   * {
     @apply border-border;
