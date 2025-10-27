@@ -142,27 +142,21 @@ const Index = () => {
           <TabsList className="grid w-full grid-cols-3 h-auto p-1 glass-card gradient-border">
             <TabsTrigger 
               value="slots" 
-              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-primary data-[state=active]:to-secondary data-[state=active]:text-white font-bold text-xs md:text-sm py-3 md:py-4 flex items-center justify-center gap-1 md:gap-2 transition-all"
+              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-primary data-[state=active]:to-secondary data-[state=active]:text-white font-bold text-[10px] sm:text-xs md:text-sm py-3 md:py-4 flex items-center justify-center gap-1 transition-all"
             >
-              <img src={degenHat} alt="Slots" className="w-4 h-4 md:w-5 md:h-5 object-contain" />
-              <span className="hidden sm:inline">SLOTS</span>
-              <span className="sm:hidden">🎰</span>
+              <span>Mega Degen 🎰</span>
             </TabsTrigger>
             <TabsTrigger 
               value="dice" 
-              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-primary data-[state=active]:to-secondary data-[state=active]:text-white font-bold text-xs md:text-sm py-3 md:py-4 flex items-center justify-center gap-1 md:gap-2 transition-all"
+              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-primary data-[state=active]:to-secondary data-[state=active]:text-white font-bold text-[10px] sm:text-xs md:text-sm py-3 md:py-4 flex items-center justify-center gap-1 transition-all"
             >
-              <Dice1 className="w-4 h-4 md:w-5 md:h-5" />
-              <span className="hidden sm:inline">DICE</span>
-              <span className="sm:hidden">🎲</span>
+              <span>Guessr 💯</span>
             </TabsTrigger>
             <TabsTrigger 
               value="roulette" 
-              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-primary data-[state=active]:to-secondary data-[state=active]:text-white font-bold text-xs md:text-sm py-3 md:py-4 flex items-center justify-center gap-1 md:gap-2 transition-all"
+              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-primary data-[state=active]:to-secondary data-[state=active]:text-white font-bold text-[10px] sm:text-xs md:text-sm py-3 md:py-4 flex items-center justify-center gap-1 transition-all"
             >
-              <Dices className="w-4 h-4 md:w-5 md:h-5" />
-              <span className="hidden sm:inline">ROULETTE</span>
-              <span className="sm:hidden">🎡</span>
+              <span>Guessr Super</span>
             </TabsTrigger>
           </TabsList>
 
