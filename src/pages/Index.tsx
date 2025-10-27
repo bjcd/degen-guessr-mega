@@ -1,8 +1,9 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "@/hooks/use-toast";
-import { Trophy, Zap, TrendingUp, Crown, Sparkles } from "lucide-react";
+import { Trophy, Zap, TrendingUp, Crown, Sparkles, Dice1, Dices } from "lucide-react";
 import degenHat from "@/assets/degen-logo.png";
 import { SlotMachine } from "@/components/SlotMachine";
 
@@ -127,14 +128,45 @@ const Index = () => {
         {/* Header with Logo */}
         <div className="text-center space-y-3">
           <div className="flex items-center justify-center gap-3">
-            <img src={degenHat} alt="Degen Hat" className="w-16 h-16 object-contain animate-[bounce_2s_ease-in-out_infinite]" />
-            <h1 className="text-5xl md:text-6xl font-black bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent neon-glow">
-              DEGEN SLOTS
+            <img src={degenHat} alt="Degen Hat" className="w-12 h-12 md:w-16 md:h-16 object-contain animate-[bounce_2s_ease-in-out_infinite]" />
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-black bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent neon-glow">
+              DEGEN CASINO
             </h1>
-            <img src={degenHat} alt="Degen Hat" className="w-16 h-16 object-contain animate-[bounce_2s_ease-in-out_infinite] scale-x-[-1]" />
+            <img src={degenHat} alt="Degen Hat" className="w-12 h-12 md:w-16 md:h-16 object-contain animate-[bounce_2s_ease-in-out_infinite] scale-x-[-1]" />
           </div>
-          <p className="text-muted-foreground text-sm font-medium">Spin the reels. Match three hats. Win the jackpot.</p>
+          <p className="text-muted-foreground text-xs md:text-sm font-medium">Choose your game and win big!</p>
         </div>
+
+        {/* Game Tabs */}
+        <Tabs defaultValue="slots" className="w-full">
+          <TabsList className="grid w-full grid-cols-3 h-auto p-1 glass-card gradient-border">
+            <TabsTrigger 
+              value="slots" 
+              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-primary data-[state=active]:to-secondary data-[state=active]:text-white font-bold text-xs md:text-sm py-3 md:py-4 flex items-center justify-center gap-1 md:gap-2 transition-all"
+            >
+              <img src={degenHat} alt="Slots" className="w-4 h-4 md:w-5 md:h-5 object-contain" />
+              <span className="hidden sm:inline">SLOTS</span>
+              <span className="sm:hidden">🎰</span>
+            </TabsTrigger>
+            <TabsTrigger 
+              value="dice" 
+              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-primary data-[state=active]:to-secondary data-[state=active]:text-white font-bold text-xs md:text-sm py-3 md:py-4 flex items-center justify-center gap-1 md:gap-2 transition-all"
+            >
+              <Dice1 className="w-4 h-4 md:w-5 md:h-5" />
+              <span className="hidden sm:inline">DICE</span>
+              <span className="sm:hidden">🎲</span>
+            </TabsTrigger>
+            <TabsTrigger 
+              value="roulette" 
+              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-primary data-[state=active]:to-secondary data-[state=active]:text-white font-bold text-xs md:text-sm py-3 md:py-4 flex items-center justify-center gap-1 md:gap-2 transition-all"
+            >
+              <Dices className="w-4 h-4 md:w-5 md:h-5" />
+              <span className="hidden sm:inline">ROULETTE</span>
+              <span className="sm:hidden">🎡</span>
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="slots" className="mt-6 space-y-6 animate-fade-in">
 
         <div className="grid lg:grid-cols-3 gap-6">
           {/* Left Column - Main Game */}
@@ -315,6 +347,24 @@ const Index = () => {
             </Card>
           </div>
         </div>
+          </TabsContent>
+
+          <TabsContent value="dice" className="mt-6 animate-fade-in">
+            <Card className="glass-card gradient-border p-8 md:p-12 text-center space-y-4">
+              <Dice1 className="w-16 h-16 md:w-20 md:h-20 mx-auto text-primary" />
+              <h2 className="text-2xl md:text-3xl font-black text-foreground">DICE GAME</h2>
+              <p className="text-muted-foreground">Coming soon! Roll the dice and test your luck.</p>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="roulette" className="mt-6 animate-fade-in">
+            <Card className="glass-card gradient-border p-8 md:p-12 text-center space-y-4">
+              <Dices className="w-16 h-16 md:w-20 md:h-20 mx-auto text-primary" />
+              <h2 className="text-2xl md:text-3xl font-black text-foreground">ROULETTE</h2>
+              <p className="text-muted-foreground">Coming soon! Spin the wheel and win big!</p>
+            </Card>
+          </TabsContent>
+        </Tabs>
       </div>
     </main>
   );
